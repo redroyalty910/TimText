@@ -9,15 +9,31 @@
 #include <string>
 
 std::string current_file = ""; // empty string = no file yet / non-empty = already saved a file
+bool is_modified = false; // false? nothing changed. true? user edited text
+
+void modify_cb(int, int, int, int, const char*, void*) { // when text buffer changes this runs and marks doc as modified
+	is_modified = true;
+}
 
 void new_cb(Fl_Widget*, void* data) { // callback for file -> new
 	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
 	textbuf->text(""); // clears text
 	current_file = ""; // forgets current file
+	is_modified = false; // resets to false
 }
 
 void open_cb(Fl_Widget*, void* data) { // callback for file -> open
 	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
+
+	if (is_modified) {
+		int choice = fl_choice(
+			"You have some unsaved changes there skippy,\nare you SURE about this?",
+			"Naw",
+			"Yaw",
+			nullptr
+		);
+		if (choice == 0) return; // cancel option
+	}
 
 	const char* filename = fl_file_chooser("Open File", "*txt", ""); // opens file picker
 
@@ -41,6 +57,7 @@ void open_cb(Fl_Widget*, void* data) { // callback for file -> open
 	textbuf->text(contents.c_str()); // puts text into the editor buffer
 	current_file = filename; // remember the file path
 	fl_message("I opened your file bro.");
+	is_modified = false; // reset mod value to false
 }
 
 void save_cb(Fl_Widget*, void* data) { // callback for file -> save
@@ -60,6 +77,7 @@ void save_cb(Fl_Widget*, void* data) { // callback for file -> save
 	file << textbuf->text(); // writes text from buffer to file
 	file.close();
 	fl_message("Your file has been 100% saved successfully!");
+	is_modified = false;
 }
 
 void save_as_cb(Fl_Widget*, void* data) { // callback for file -> save as
@@ -79,7 +97,9 @@ void save_as_cb(Fl_Widget*, void* data) { // callback for file -> save as
 	file << textbuf->text(); // writes text from buffer to file
 	file.close();
 	fl_message("Your file has been 100% saved successfully!");
+	is_modified = false; // reset modification to false
 }
+
 void copy_cb(Fl_Widget*, void* data) { // callback for edit -> copy
 	Fl_Text_Editor* editor = (Fl_Text_Editor*)data;
 	Fl_Text_Editor::kf_copy(0, editor); // FLTK's built-in copy function
@@ -112,6 +132,7 @@ int main() {
 	Fl_Window* window = new Fl_Window(800, 600, "TimText"); // main app window
 	Fl_Menu_Bar* menu = new Fl_Menu_Bar(0, 0, 800, 25); // bar at top of GUI
 	Fl_Text_Buffer* textbuf = new Fl_Text_Buffer(); // where text lives; the document in memory	
+	textbuf->add_modify_callback(modify_cb, nullptr);
 	Fl_Text_Editor* editor = new Fl_Text_Editor(0, 25, 800, 575); // typing area, displays/edits the buffer
 	editor->buffer(textbuf); // connects editor widet to text buffer
 		menu->add("&File/&New", FL_CTRL + 'n', new_cb, textbuf); // parent menu / child item format, 0 = keyboard sc, whenclikced = runs callback above

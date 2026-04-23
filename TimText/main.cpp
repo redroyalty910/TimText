@@ -5,23 +5,45 @@
 #include <FL/Fl_Text_Buffer.H> // class for text buffer
 #include <FL/fl_ask.H> // a simple popup message box
 
-void hello_cb(Fl_Widget*, void*) { // callback function for testing purposes
+void new_cb(Fl_Widget*, void* data) { // callback for file -> new
+	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
+	textbuf->text("");
+}
+
+void copy_cb(Fl_Widget*, void* data) { // callback for edit -> copy
+	Fl_Text_Editor* editor = (Fl_Text_Editor*)data;
+	Fl_Text_Editor::kf_copy(0, editor); // FLTK's built-in copy function
+}
+
+void paste_cb(Fl_Widget*, void* data) { // callback for edit -> paste
+	Fl_Text_Editor* editor = (Fl_Text_Editor*)data;
+	Fl_Text_Editor::kf_paste(0, editor); // FLTK's built-in paste function
+}
+
+void about_cb(Fl_Widget*, void*) { // does exactly what you think
+	fl_message("TimText!\nBUILT WITH C++ AND FLTK!");
+}
+
+void hello_cb(Fl_Widget*, void*) { // callback for testing purposes
 	fl_message("Daniel Mode");
 }
 
 int main() {
 	Fl_Window* window = new Fl_Window(800, 600, "TimText"); // main app window
 	Fl_Menu_Bar* menu = new Fl_Menu_Bar(0, 0, 800, 25); // bar at top of GUI
-		menu->add("&File/&New", 0, hello_cb); // parent menu / child item format, 0 = keyboard sc, whenclikced = runs callback above
-		menu->add("&File/&Open", 0, hello_cb);
-		menu->add("&File/&Save", 0, hello_cb);
-		menu->add("&Edit/&Copy", 0, hello_cb);
-		menu->add("&Edit/&Paste", 0, hello_cb);
-		menu->add("&Help/&About", 0, hello_cb);
-		menu->add("&Tim/&Tim", 0, hello_cb);
-	Fl_Text_Buffer* textbuf = new Fl_Text_Buffer(); // where text lives; the document in memory
+	Fl_Text_Buffer* textbuf = new Fl_Text_Buffer(); // where text lives; the document in memory	
 	Fl_Text_Editor* editor = new Fl_Text_Editor(0, 25, 800, 575); // typing area, displays/edits the buffer
 	editor->buffer(textbuf); // connects editor widet to text buffer
+		menu->add("&File/&New", 0, new_cb, textbuf); // parent menu / child item format, 0 = keyboard sc, whenclikced = runs callback above
+		menu->add("&File/&Open", 0, hello_cb);
+		menu->add("&File/&Save", 0, hello_cb);
+
+		menu->add("&Edit/&Copy", 0, copy_cb, editor);
+		menu->add("&Edit/&Paste", 0, paste_cb, editor);
+
+		menu->add("&Help/&About", 0, about_cb);
+		menu->add("&Tim/&Tim", 0, hello_cb);
+		menu->add("&Tim/&Tim", 0, hello_cb);
 
 	window->end(); // nothing else to add to the window
 	window->show(); // tells FLTK to make the window visible

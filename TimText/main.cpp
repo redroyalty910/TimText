@@ -7,18 +7,23 @@
 #include <Fl/fl_File_Chooser.H> // opens a file picker window in explorer
 #include <fstream> // file stream, lets C++ write to files
 
+std::string current_file = ""; // empty string = no file yet / non-empty = already saved a file
+
 void new_cb(Fl_Widget*, void* data) { // callback for file -> new
 	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
 	textbuf->text("");
 }
 
-void save_cb(Fl_Widget*, void* data) {
+void save_cb(Fl_Widget*, void* data) { // callback for file -> save
 	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
-	const char* filename = fl_file_chooser("Save File", "*.txt", ""); // let's user pick a file name in a new window
-	if (filename == nullptr) { // string if file path, nullptr if cancelled
+	if(current_file.empty()) { // if there is no file, ask for one
+		const char* filename = fl_file_chooser("Save File", "*.txt", ""); // let's user pick a file name in a new window
+
+		if (filename == nullptr) // string if file path, nullptr if cancelled
 		return; // implies that the user cancelled
+		current_file = filename;
 	}
-	std::ofstream file(filename); // creates file output stream to write file
+	std::ofstream file(current_file); // creates file output stream to write file
 	if (!file) {
 		fl_message("Hey bud, it's tim... we couldn't save your file.");
 		return;
@@ -28,6 +33,24 @@ void save_cb(Fl_Widget*, void* data) {
 	fl_message("Your file has been 100% saved successfully!");
 }
 
+void save_as_cb(Fl_Widget*, void* data) { // callback for file -> save as
+	Fl_Text_Buffer* textbuf = (Fl_Text_Buffer*)data;
+		const char* filename = fl_file_chooser("Save File As", "*.txt", ""); // let's user pick a file name in a new window
+
+		if (filename == nullptr) // string if file path, nullptr if cancelled
+			return; // implies that the user cancelled
+		current_file = filename;
+
+	std::ofstream file(current_file); // creates file output stream to write file
+	
+	if (!file) {
+		fl_message("Hey bud, it's tim... we couldn't save your file.");
+		return;
+	}
+	file << textbuf->text(); // writes text from buffer to file
+	file.close();
+	fl_message("Your file has been 100% saved successfully!");
+}
 void copy_cb(Fl_Widget*, void* data) { // callback for edit -> copy
 	Fl_Text_Editor* editor = (Fl_Text_Editor*)data;
 	Fl_Text_Editor::kf_copy(0, editor); // FLTK's built-in copy function
@@ -65,6 +88,7 @@ int main() {
 		menu->add("&File/&New", FL_CTRL + 'n', new_cb, textbuf); // parent menu / child item format, 0 = keyboard sc, whenclikced = runs callback above
 		menu->add("&File/&Open", 0, hello_cb);
 		menu->add("&File/&Save", FL_CTRL + 's', save_cb, textbuf);
+		menu->add("&File/Save &As", FL_CTRL + 'a', save_as_cb, textbuf);
 
 		menu->add("&Edit/&Cut", FL_CTRL + 'x', cut_cb, editor);
 		menu->add("&Edit/&Copy", 0, copy_cb, editor);

@@ -11,6 +11,7 @@ extern std::string current_file; // these two externs are located in callbacks.c
 extern bool is_modified; 
 
 void update_title(Fl_Window* window);
+void update_status(EditorData* app);
 
 void modify_cb(int, int, int, int, const char*, void*);
 

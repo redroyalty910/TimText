@@ -29,6 +29,19 @@ void update_title(Fl_Window* window) {
 	window->label(title.c_str()); // apply changes to the window
 }
 
+void update_status(EditorData* app) { // recieves whole app state
+	std::string file_display; // preparing a string to show
+	if (current_file.empty()) {
+		file_display = "Untitled"; // if no file, show "untitled"
+	}
+	else {// otherwise, filename is extracted
+		file_display = std::filesystem::path(current_file).filename().string();
+	}
+	std::string modified_display = is_modified ? "Modified" : "Saved"; // ternary operator
+	std::string status = "Line 1, Column 1 | " + file_display + " | " + modified_display; // build of final string
+	app->status_bar->label(status.c_str()); // applied to UI
+}
+ 
 void modify_cb(int, int, int, int, const char*, void* data) { // when text buffer changes this runs and marks doc as modified
 	is_modified = true; // modify changes is_modified
 	Fl_Window* window = (Fl_Window*)data;
@@ -42,6 +55,7 @@ void new_cb(Fl_Widget*, void* data) { // callback for file -> new
 	current_file = ""; // forgets current file
 	is_modified = false; // resets to false
 	update_title(app->window);
+	update_status(app);
 }
 
 void open_cb(Fl_Widget*, void* data) { // callback for file -> open
@@ -77,6 +91,7 @@ void open_cb(Fl_Widget*, void* data) { // callback for file -> open
 	current_file = filename;
 	is_modified = false;
 	update_title(app->window);
+	update_status(app);
 	fl_message("Your file has been opened.");
 }
 
@@ -98,6 +113,7 @@ void save_cb(Fl_Widget*, void* data) { // callback for file -> save
 	file.close();
 	is_modified = false;
 	update_title(app->window);
+	update_status(app);
 	fl_message("Your file has been saved successfully!");
 }
 

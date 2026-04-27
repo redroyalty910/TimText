@@ -12,6 +12,3 @@ struct EditorData { // core callbacks grouped together
 	Fl_Text_Editor* editor;
 	Fl_Window* window;
 };
-
-extern std::string current_file = ""; // empty string = no file yet / non-empty = already saved a file
-extern bool is_modified = false; // false? nothing changed. true? user edited text

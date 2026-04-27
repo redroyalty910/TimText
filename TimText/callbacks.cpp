@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 
 std::string current_file = ""; // empty string = no file yet / non-empty = already saved a file
 bool is_modified = false; // false? nothing changed. true? user edited text
@@ -20,7 +21,7 @@ void update_title(Fl_Window* window) {
 		title += "Untitled"; // if not, labeled as "untitled"
 	}
 	else {
-		title += current_file; // if not empty, labels based on current file name
+		title += std::filesystem::path(current_file).filename().string(); // if not empty, labels based on current file name
 	}
 	if (is_modified) {  // if unsaved changes exist
 		title += " *";
@@ -36,6 +37,7 @@ void modify_cb(int, int, int, int, const char*, void* data) { // when text buffe
 
 void new_cb(Fl_Widget*, void* data) { // callback for file -> new
 	EditorData* app = (EditorData*)data;
+	if (!confirm_save(app)) return;
 	app->textbuf->text("");
 	current_file = ""; // forgets current file
 	is_modified = false; // resets to false
@@ -96,7 +98,7 @@ void save_cb(Fl_Widget*, void* data) { // callback for file -> save
 	file.close();
 	is_modified = false;
 	update_title(app->window);
-	fl_message("Your file has been 100% saved successfully!");
+	fl_message("Your file has been saved successfully!");
 }
 
 void save_as_cb(Fl_Widget*, void* data) { // callback for file -> save as
@@ -120,6 +122,21 @@ void save_as_cb(Fl_Widget*, void* data) { // callback for file -> save as
 
 }
 
+int confirm_save(EditorData* app) {
+	if (!is_modified) return 1; // nothin to worry about
+	int choice = fl_choice(
+		"HEY! you have UNSAVED CHANGES! \n would you like to save?",
+		"GET ME OUT OF HERE!",
+		"Fuh no.",
+		"Save"
+	);
+	if (choice == 0) return 0; // this is the cancel option
+	if (choice == 2) {
+		save_cb(nullptr, app); // this is the save option
+		return 1;
+	}
+	return 1; // this is the don't save option
+}
 void copy_cb(Fl_Widget*, void* data) { // callback for edit -> copy
 	EditorData* app = (EditorData*)data;
 	Fl_Text_Editor::kf_copy(0, app->editor); // FLTK's built-in copy function

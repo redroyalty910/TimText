@@ -38,6 +38,13 @@ int main() {
 
 	window->end(); // nothing else to add to the window
 	update_title(window); // when file state changes, update title
+	window->callback([](Fl_Widget* w, void* data) {
+		EditorData* app = (EditorData*)data;
+		if (!confirm_save(app)) {
+			return; // cancel close
+		}
+		w->hide(); // actually close
+		}, app);
 	window->show(); // tells FLTK to make the window visible
 
 	return Fl::run(); // keeps the program alive

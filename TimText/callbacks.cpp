@@ -43,9 +43,10 @@ void update_status(EditorData* app) { // recieves whole app state
 }
  
 void modify_cb(int, int, int, int, const char*, void* data) { // when text buffer changes this runs and marks doc as modified
+	EditorData* app = (EditorData*)data;
 	is_modified = true; // modify changes is_modified
-	Fl_Window* window = (Fl_Window*)data;
-	update_title(window); // modify updates the title
+	update_title(app->window);
+	update_status(app);
 }
 
 void new_cb(Fl_Widget*, void* data) { // callback for file -> new
@@ -165,7 +166,7 @@ void paste_cb(Fl_Widget*, void* data) { // callback for edit -> paste
 
 void cut_cb(Fl_Widget*, void* data) { // callback for edit -> cut
 	EditorData* app = (EditorData*)data;
-	Fl_Text_Editor::kf_paste(0, app->editor); // FLTK's built-in cut function
+	Fl_Text_Editor::kf_cut(0, app->editor); // FLTK's built-in cut function
 }
 
 void delete_cb(Fl_Widget*, void* data) { // callback for edit -> delete

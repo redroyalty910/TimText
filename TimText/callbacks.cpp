@@ -26,7 +26,7 @@ void update_title(Fl_Window* window) {
 	if (is_modified) {  // if unsaved changes exist
 		title += " *";
 	}
-	window->label(title.c_str()); // apply changes to the window
+	window->copy_label(title.c_str()); // makes copy of text and apply changes to the window
 }
 
 void update_status(EditorData* app) { // recieves whole app state
@@ -38,8 +38,12 @@ void update_status(EditorData* app) { // recieves whole app state
 		file_display = std::filesystem::path(current_file).filename().string();
 	}
 	std::string modified_display = is_modified ? "Modified" : "Saved"; // ternary operator
-	std::string status = "Line 1, Column 1 | " + file_display + " | " + modified_display; // build of final string
-	app->status_bar->label(status.c_str()); // applied to UI
+	int pos = app->editor->insert_position();
+	int line = app->textbuf->count_lines(0, pos) + 1;
+	int line_start = app->textbuf->line_start(pos);
+	int column = pos - line_start + 1;
+	std::string status = "Line " + std::to_string(line) + ", Column " + std::to_string(column) + " | " + file_display + " | " + modified_display; // build of final string
+	app->status_bar->copy_label(status.c_str()); // makes copy of text, applied to UI
 }
  
 void modify_cb(int, int, int, int, const char*, void* data) { // when text buffer changes this runs and marks doc as modified
@@ -64,7 +68,7 @@ void open_cb(Fl_Widget*, void* data) { // callback for file -> open
 
 	if (is_modified) {
 		int choice = fl_choice(
-			"You have some unsaved changes there skippy,\nare you SURE about this?",
+			"You have some unsaved changes there skip,\nare you SURE about this?",
 			"Naw",
 			"Yaw",
 			nullptr
@@ -143,9 +147,9 @@ int confirm_save(EditorData* app) {
 	if (!is_modified) return 1; // nothin to worry about
 	int choice = fl_choice(
 		"HEY! you have UNSAVED CHANGES! \n would you like to save?",
-		"GET ME OUT OF HERE!",
+		"AAAAAAAAAAAA!",
 		"Fuh no.",
-		"Save"
+		"Fuh yea."
 	);
 	if (choice == 0) return 0; // this is the cancel option
 	if (choice == 2) {
